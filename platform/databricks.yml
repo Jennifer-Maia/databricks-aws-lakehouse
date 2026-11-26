@@ -1,0 +1,42 @@
+# Declarative Automation Bundle (antigo Databricks Asset Bundle) do lakehouse econ.
+#
+# O MESMO código vai para os dois ambientes; só a configuração muda:
+#   databricks bundle deploy -t dev    # lakehouse-dev  -> catálogo econ_dev
+#   databricks bundle deploy -t prod   # lakehouse-prod -> catálogo econ_prod
+
+bundle:
+  name: econ-lakehouse
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Catálogo do ambiente (econ_dev ou econ_prod), criado pelo Terraform em infra/02-governance.
+    default: econ_dev
+
+targets:
+  dev:
+    default: true
+    # development: recursos ganham o prefixo "[dev <usuário>]", agendas ficam pausadas
+    # e o pipeline roda em modo development (não reinicia o cluster a cada erro).
+    mode: development
+    workspace:
+      profile: lakehouse-dev
+    variables:
+      catalog: econ_dev
+
+  prod:
+    # production: código numa pasta fora do usuário, só admins publicam,
+    # e o resto do time só VÊ os recursos.
+    mode: production
+    workspace:
+      profile: lakehouse-prod
+      root_path: /Workspace/Projects/${bundle.name}/${bundle.target}
+    variables:
+      catalog: econ_prod
+    permissions:
+      - group_name: platform-admins
+        level: CAN_MANAGE
+      - group_name: data-engineering
+        level: CAN_VIEW

@@ -6,6 +6,18 @@ on:
   pull_request:
 
 jobs:
+  platform-tests:
+    name: Testes do pipeline (pytest + PySpark)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: astral-sh/setup-uv@v6
+      - run: cd platform && uv run --no-project --python 3.12 --with pytest --with "pyspark==4.0.*" pytest tests -q
+
   ingestion-tests:
     name: Testes da Lambda (pytest)
     runs-on: ubuntu-latest

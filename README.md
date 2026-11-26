@@ -50,7 +50,7 @@ Dados reais do **Banco Central do Brasil** são coletados por uma **AWS Lambda**
 | Segurança | AWS IAM (cross-account role, External ID, self-assuming role) · bucket policies · criptografia SSE-S3 |
 | Rede | VPC gerenciada pela Databricks, com NAT Gateway, na conta AWS |
 | Governança | Unity Catalog: storage credential, external locations, catálogos isolados por workspace, grupos e grants |
-| Processamento | Databricks Jobs (serverless) · PySpark · Auto Loader |
+| Processamento | Lakeflow Jobs (serverless) · PySpark · Auto Loader (`availableNow`) · Spark SQL |
 | CI/CD | Declarative Automation Bundles (DABs) · GitHub Actions |
 | Consumo | AI/BI Dashboard · Genie |
 | IaC | Terraform (providers `aws`, `databricks`, `time`) |
@@ -72,22 +72,24 @@ flowchart LR
     L -->|JSON| RAW[("🪣 S3 raw<br/>env/bcb/serie/data.json")]
     RAW -->|volume landing| BZ["🥉 Bronze<br/>Auto Loader<br/>+ metadados de carga"]
     BZ --> SV["🥈 Silver<br/>tipado · deduplicado<br/>1 linha por série/data"]
+    SV -.->|inválidos| QR["🚫 Quarentena"]
     SV --> GD["🥇 Gold<br/>indicadores de negócio"]
+    GD --> QA{"✅ Qualidade<br/>job falha se<br/>regra quebrar"}
     GD --> DB["📊 Dashboard"]
     GD --> GN["💬 Genie"]
 
     classDef aws fill:#FFF4E5,stroke:#FF9900,color:#000
     classDef dbx fill:#FFEDEA,stroke:#FF3621,color:#000
     class L,EB,RAW aws
-    class BZ,SV,GD,DB,GN dbx
+    class BZ,SV,GD,DB,GN,QR,QA dbx
 ```
 
 | Camada | Schema | Conteúdo | Regra principal |
 |---|---|---|---|
 | **Landing** | `landing` | Volume `bcb` apontando para `s3://econ-raw-…/<env>/bcb/` | Arquivo exatamente como veio da API |
-| **Bronze** | `bronze` | JSON em Delta + `_arquivo_origem`, `_carregado_em` | Nunca altera o dado, só adiciona metadados |
-| **Silver** | `silver` | Séries com data e valor tipados | Sem duplicatas: 1 linha por `serie` + `data` |
-| **Gold** | `gold` | Câmbio diário com variação, Selic, IPCA acumulado em 12 meses | Pronto para o negócio; único schema visível aos analistas |
+| **Bronze** | `bronze` | `bcb_series_raw`: JSON em Delta + `_arquivo_origem`, `_carregado_em` (Auto Loader com checkpoint) | Nunca altera o dado, só adiciona metadados |
+| **Silver** | `silver` | `bcb_observacoes` (tipado) + `bcb_observacoes_rejeitadas` (quarentena) | Sem duplicatas: 1 linha por `serie` + `data`, fica a coleta mais recente |
+| **Gold** | `gold` | `cambio_diario`, `indicadores_mensais`, `ultimos_valores` | Pronto para o negócio; único schema visível aos analistas |
 
 ---
 
@@ -160,7 +162,7 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    DEV["👩‍💻 Desenvolvimento<br/>lakehouse-dev · econ_dev"] -->|git push| GH["⚙️ GitHub Actions<br/>pytest · terraform validate"]
+    DEV["👩‍💻 Desenvolvimento<br/>lakehouse-dev · econ_dev"] -->|git push| GH["⚙️ GitHub Actions<br/>pytest + PySpark · terraform validate"]
     GH -->|databricks bundle deploy -t prod| PROD["🏭 Produção<br/>lakehouse-prod · econ_prod"]
     PROD --> BI["📊 Dashboard / 💬 Genie<br/>grupo analysts"]
 ```
@@ -201,7 +203,13 @@ API pública **SGS (Sistema Gerenciador de Séries Temporais)**, sem autenticaç
 │   │   └── modules/environment/    #     módulo reutilizado por ambiente (catálogo, schemas, volume, grants)
 │   └── 03-ingestion/               #   Lambda + EventBridge Scheduler + IAM + CloudWatch
 ├── ingestion/                      # Código Python da Lambda + testes (pytest)
-├── platform/                       # Bundle Databricks: jobs, notebooks, dashboard, Genie (🚧)
+├── platform/                       # Bundle Databricks (promovido DEV → PROD)
+│   ├── databricks.yml              #   targets dev/prod
+│   ├── resources/                  #   job econ-daily (4 tarefas serverless)
+│   ├── src/econ/transforms.py      #   regras da Silver (PySpark, testadas)
+│   ├── src/notebooks/              #   01_bronze · 02_silver · 03_gold · 04_qualidade
+│   ├── src/sql/gold/               #   1 SELECT por tabela Gold
+│   └── tests/                      #   pytest + PySpark local
 ├── docs/
 │   ├── img/                        #   diagrama de arquitetura (SVG + Excalidraw)
 │   ├── aprendizado/                #   o que aprendi em cada etapa + perguntas de entrevista
@@ -245,7 +253,14 @@ aws lambda invoke --function-name econ-ingest-dev  --cli-binary-format raw-in-ba
 aws lambda invoke --function-name econ-ingest-prod --cli-binary-format raw-in-base64-out --payload '{"start_date":"2024-01-01"}' /dev/stdout
 ```
 
-Os próximos passos (pipeline e consumo) entram aqui conforme forem concluídos.
+```bash
+# 6. Testes locais (estágio TEST)
+cd platform && uv run --no-project --with pytest --with "pyspark==4.0.*" pytest tests -q
+
+# 7. DEV → PROD com o mesmo código
+databricks bundle deploy -t dev  && databricks bundle run econ_daily -t dev
+databricks bundle deploy -t prod && databricks bundle run econ_daily -t prod
+```
 
 ---
 
@@ -266,7 +281,7 @@ Controles: **AWS Budget** com alerta em US$ 5 (contando o gasto antes dos crédi
 - [x] Workspaces DEV e PROD na AWS via Terraform
 - [x] Governança: buckets, IAM, grupos, catálogos isolados, schemas por camada e grants
 - [x] Ingestão: Lambda + EventBridge gravando a API do BCB no S3 (backfill desde 01/2024)
-- [ ] Pipeline Bronze → Silver → Gold (bundle + testes)
+- [x] Pipeline Bronze → Silver → Gold (job serverless + Auto Loader + quarentena + testes PySpark)
 - [ ] Promoção para PROD com GitHub Actions
 - [ ] Consumo: Dashboard e Genie
 - [ ] Evidências e limpeza do ambiente
@@ -282,6 +297,8 @@ O material de estudo que escrevi em cada etapa está em [`docs/aprendizado/`](do
 | 01 | [Terraform: infraestrutura como código](docs/aprendizado/01-terraform.md) |
 | 02 | [IAM e Unity Catalog: a Databricks acessando a AWS com segurança](docs/aprendizado/02-iam-e-unity-catalog.md) |
 | 03 | [Ingestão serverless: Lambda + EventBridge + S3](docs/aprendizado/03-ingestao-lambda.md) |
+| 04 | [Medalhão: Auto Loader, PySpark, Jobs serverless e Bundles](docs/aprendizado/04-medalhao-jobs-bundles.md) |
+| 05 | [Troubleshooting: problemas reais e como foram investigados](docs/aprendizado/05-troubleshooting.md) |
 
 ---
 
