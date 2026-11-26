@@ -1,0 +1,674 @@
+{
+  "datasets": [
+    {
+      "name": "ds_kpis",
+      "displayName": "Últimos valores",
+      "queryLines": [
+        "WITH u AS (SELECT * FROM ultimos_valores),\n",
+        "m AS (SELECT max_by(ipca_12m_pct, mes) AS ipca_12m, max_by(mes, mes) AS mes_ipca\n",
+        "      FROM indicadores_mensais WHERE ipca_12m_pct IS NOT NULL)\n",
+        "SELECT\n",
+        "  max(CASE WHEN serie = 'dolar_venda' THEN ultimo_valor END) AS dolar,\n",
+        "  max(CASE WHEN serie = 'euro_venda'  THEN ultimo_valor END) AS euro,\n",
+        "  max(CASE WHEN serie = 'selic_meta'  THEN ultimo_valor END) AS selic,\n",
+        "  max(m.ipca_12m)                                            AS ipca_12m,\n",
+        "  concat('Ref.: ', date_format(max(CASE WHEN serie = 'dolar_venda' THEN data_referencia END), 'dd/MM/yyyy')) AS ref\n",
+        "FROM u CROSS JOIN m\n"
+      ]
+    },
+    {
+      "name": "ds_cambio",
+      "displayName": "Câmbio diário",
+      "queryLines": [
+        "SELECT data, dolar, euro, dolar_media_30d, euro_media_30d, dolar_variacao_pct\n",
+        "FROM cambio_diario\n",
+        "ORDER BY data\n"
+      ]
+    },
+    {
+      "name": "ds_mensal",
+      "displayName": "Indicadores mensais",
+      "queryLines": [
+        "SELECT mes AS data, dolar_medio, dolar_fechamento, euro_medio, selic_meta_pct_aa, cdi_acumulado_mes_pct,\n",
+        "       ipca_mes_pct, ipca_12m_pct, juro_real_aprox_pct, dias_uteis\n",
+        "FROM indicadores_mensais\n",
+        "ORDER BY mes\n"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "visao_geral",
+      "displayName": "Visão geral",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "titulo",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# 🏦 Indicadores Econômicos · Banco Central do Brasil\n",
+                "\n",
+                "Câmbio, juros e inflação coletados diariamente da API SGS do BCB por uma **AWS Lambda**, processados na arquitetura **medalhão** (Bronze → Silver → Gold) e governados pelo **Unity Catalog**. Fonte: `econ_prod.gold` · atualização diária às 21h."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_dolar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "dolar",
+                      "expression": "`dolar`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "dolar",
+                  "displayName": "Dólar (venda)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 4
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Dólar (venda)",
+                "showDescription": true,
+                "description": "{{ref}}"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_euro",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "euro",
+                      "expression": "`euro`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "euro",
+                  "displayName": "Euro (venda)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "BRL",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 4
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Euro (venda)",
+                "showDescription": true,
+                "description": "{{ref}}"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_selic",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "selic",
+                      "expression": "`selic`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "selic",
+                  "displayName": "Selic meta (% a.a.)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    },
+                    "suffix": "%"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Selic meta (% a.a.)",
+                "showDescription": true,
+                "description": "{{ref}}"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_ipca",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "ipca_12m",
+                      "expression": "`ipca_12m`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "ipca_12m",
+                  "displayName": "IPCA 12 meses",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    },
+                    "suffix": "%"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "IPCA 12 meses",
+                "showDescription": true,
+                "description": "{{ref}}"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "graf_dolar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_cambio",
+                  "fields": [
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "dolar",
+                      "expression": "`dolar`"
+                    },
+                    {
+                      "name": "dolar_media_30d",
+                      "expression": "`dolar_media_30d`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "data",
+                  "displayName": "Data",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fields": [
+                    {
+                      "fieldName": "dolar",
+                      "displayName": "Dólar (R$)"
+                    },
+                    {
+                      "fieldName": "dolar_media_30d",
+                      "displayName": "Média 30d"
+                    }
+                  ]
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Dólar: cotação diária e média móvel de 30 dias úteis",
+                "showDescription": false,
+                "description": ""
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "graf_juros",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_mensal",
+                  "fields": [
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "selic_meta_pct_aa",
+                      "expression": "`selic_meta_pct_aa`"
+                    },
+                    {
+                      "name": "ipca_12m_pct",
+                      "expression": "`ipca_12m_pct`"
+                    },
+                    {
+                      "name": "juro_real_aprox_pct",
+                      "expression": "`juro_real_aprox_pct`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "data",
+                  "displayName": "Data",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fields": [
+                    {
+                      "fieldName": "selic_meta_pct_aa",
+                      "displayName": "Selic meta (% a.a.)"
+                    },
+                    {
+                      "fieldName": "ipca_12m_pct",
+                      "displayName": "IPCA 12m (%)"
+                    },
+                    {
+                      "fieldName": "juro_real_aprox_pct",
+                      "displayName": "Juro real (%)"
+                    }
+                  ]
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Selic vs inflação: o juro real",
+                "showDescription": true,
+                "description": "Juro real ≈ (1 + Selic) / (1 + IPCA 12m) − 1"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "graf_ipca",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_mensal",
+                  "fields": [
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "ipca_mes_pct",
+                      "expression": "`ipca_mes_pct`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "data",
+                  "displayName": "Data",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "ipca_mes_pct",
+                  "displayName": "IPCA no mês (%)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "IPCA mensal (%)",
+                "showDescription": false,
+                "description": ""
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 11,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "tabela_mensal",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_mensal",
+                  "fields": [
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "dolar_medio",
+                      "expression": "`dolar_medio`"
+                    },
+                    {
+                      "name": "euro_medio",
+                      "expression": "`euro_medio`"
+                    },
+                    {
+                      "name": "selic_meta_pct_aa",
+                      "expression": "`selic_meta_pct_aa`"
+                    },
+                    {
+                      "name": "cdi_acumulado_mes_pct",
+                      "expression": "`cdi_acumulado_mes_pct`"
+                    },
+                    {
+                      "name": "ipca_mes_pct",
+                      "expression": "`ipca_mes_pct`"
+                    },
+                    {
+                      "name": "ipca_12m_pct",
+                      "expression": "`ipca_12m_pct`"
+                    },
+                    {
+                      "name": "juro_real_aprox_pct",
+                      "expression": "`juro_real_aprox_pct`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "`data`"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "data",
+                    "displayName": "Mês",
+                    "dateTimeFormat": "MM/yyyy"
+                  },
+                  {
+                    "fieldName": "dolar_medio",
+                    "displayName": "Dólar médio"
+                  },
+                  {
+                    "fieldName": "euro_medio",
+                    "displayName": "Euro médio"
+                  },
+                  {
+                    "fieldName": "selic_meta_pct_aa",
+                    "displayName": "Selic (% a.a.)"
+                  },
+                  {
+                    "fieldName": "cdi_acumulado_mes_pct",
+                    "displayName": "CDI no mês (%)"
+                  },
+                  {
+                    "fieldName": "ipca_mes_pct",
+                    "displayName": "IPCA no mês (%)"
+                  },
+                  {
+                    "fieldName": "ipca_12m_pct",
+                    "displayName": "IPCA 12m (%)"
+                  },
+                  {
+                    "fieldName": "juro_real_aprox_pct",
+                    "displayName": "Juro real (%)"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Tabela mensal"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "filtros",
+      "displayName": "Filtros",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layout": [
+        {
+          "widget": {
+            "name": "filtro_periodo",
+            "queries": [
+              {
+                "name": "q_cambio",
+                "query": {
+                  "datasetName": "ds_cambio",
+                  "fields": [
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "q_mensal",
+                "query": {
+                  "datasetName": "ds_mensal",
+                  "fields": [
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "data",
+                    "displayName": "Período",
+                    "queryName": "q_cambio"
+                  },
+                  {
+                    "fieldName": "data",
+                    "displayName": "Período",
+                    "queryName": "q_mensal"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Período"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#FCFCFC",
+        "dark": "#1F272D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "widgetBorderColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#2272B4",
+        "dark": "#8ACAFF"
+      },
+      "visualizationColors": [
+        "#0072B2",
+        "#E69F00",
+        "#009E73",
+        "#CC79A7",
+        "#D55E00",
+        "#56B4E9"
+      ],
+      "widgetHeaderAlignment": "LEFT",
+      "widgetCornerRadius": 10
+    }
+  }
+}

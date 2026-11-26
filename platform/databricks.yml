@@ -14,6 +14,10 @@ variables:
   catalog:
     description: Catálogo do ambiente (econ_dev ou econ_prod), criado pelo Terraform em infra/02-governance.
     default: econ_dev
+  warehouse_id:
+    description: SQL warehouse usado pelo Dashboard e pelo Genie (o serverless que já vem no workspace).
+    lookup:
+      warehouse: Serverless Starter Warehouse
 
 targets:
   dev:
@@ -40,3 +44,26 @@ targets:
         level: CAN_MANAGE
       - group_name: data-engineering
         level: CAN_VIEW
+    # Consumo: só existe em PROD. embed_credentials: false => cada pessoa consulta com a
+    # PRÓPRIA identidade, então valem os grants do Unity Catalog (analysts: só o schema gold).
+    resources:
+      dashboards:
+        indicadores:
+          display_name: Indicadores Econômicos · BCB
+          file_path: ./src/dashboards/indicadores.lvdash.json
+          warehouse_id: ${var.warehouse_id}
+          dataset_catalog: ${var.catalog}
+          dataset_schema: gold
+          embed_credentials: false
+          permissions:
+            - group_name: analysts
+              level: CAN_RUN
+      genie_spaces:
+        analista_economico:
+          title: Analista Econômico · BCB
+          description: Perguntas em português sobre câmbio, juros e inflação (camada Gold de econ_prod).
+          warehouse_id: ${var.warehouse_id}
+          file_path: ./src/genie/analista_economico.econ_prod.geniespace.json
+          permissions:
+            - group_name: analysts
+              level: CAN_RUN

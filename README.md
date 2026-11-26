@@ -52,7 +52,7 @@ Dados reais do **Banco Central do Brasil** são coletados por uma **AWS Lambda**
 | Governança | Unity Catalog: storage credential, external locations, catálogos isolados por workspace, grupos e grants |
 | Processamento | Lakeflow Jobs (serverless) · PySpark · Auto Loader (`availableNow`) · Spark SQL |
 | CI/CD | Declarative Automation Bundles (DABs) · GitHub Actions |
-| Consumo | AI/BI Dashboard · Genie |
+| Consumo | AI/BI Dashboard · Genie (com `embed_credentials: false`: cada pessoa vê só o que o Unity Catalog permite) |
 | IaC | Terraform (providers `aws`, `databricks`, `time`) |
 
 ---
@@ -209,6 +209,7 @@ API pública **SGS (Sistema Gerenciador de Séries Temporais)**, sem autenticaç
 │   ├── src/econ/transforms.py      #   regras da Silver (PySpark, testadas)
 │   ├── src/notebooks/              #   01_bronze · 02_silver · 03_gold · 04_qualidade
 │   ├── src/sql/gold/               #   1 SELECT por tabela Gold
+│   ├── src/dashboards/ · src/genie/ #   dashboard e Genie (JSON gerado por script, só em PROD)
 │   └── tests/                      #   pytest + PySpark local
 ├── docs/
 │   ├── img/                        #   diagrama de arquitetura (SVG + Excalidraw)
@@ -282,8 +283,8 @@ Controles: **AWS Budget** com alerta em US$ 5 (contando o gasto antes dos crédi
 - [x] Governança: buckets, IAM, grupos, catálogos isolados, schemas por camada e grants
 - [x] Ingestão: Lambda + EventBridge gravando a API do BCB no S3 (backfill desde 01/2024)
 - [x] Pipeline Bronze → Silver → Gold (job serverless + Auto Loader + quarentena + testes PySpark)
-- [ ] Promoção para PROD com GitHub Actions
-- [ ] Consumo: Dashboard e Genie
+- [x] Promoção DEV → PROD com bundles (mesmo código, agenda ativa só em PROD) + CI no GitHub Actions
+- [x] Consumo: AI/BI Dashboard e Genie em PROD, com `embed_credentials: false` (governança até o consumo)
 - [ ] Evidências e limpeza do ambiente
 
 ---
@@ -299,6 +300,7 @@ O material de estudo que escrevi em cada etapa está em [`docs/aprendizado/`](do
 | 03 | [Ingestão serverless: Lambda + EventBridge + S3](docs/aprendizado/03-ingestao-lambda.md) |
 | 04 | [Medalhão: Auto Loader, PySpark, Jobs serverless e Bundles](docs/aprendizado/04-medalhao-jobs-bundles.md) |
 | 05 | [Troubleshooting: problemas reais e como foram investigados](docs/aprendizado/05-troubleshooting.md) |
+| 06 | [Consumo: Dashboard e Genie com governança](docs/aprendizado/06-consumo-dashboard-genie.md) |
 
 ---
 

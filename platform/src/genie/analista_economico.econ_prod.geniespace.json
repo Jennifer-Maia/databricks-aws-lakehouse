@@ -1,0 +1,330 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "0e83912ce2b6fb99d4c8bf4f8fe0b80b",
+        "question": [
+          "Quanto rendeu o CDI acumulado em 2025?"
+        ]
+      },
+      {
+        "id": "61cfef3bd6bd17239cf7631dd64b7c7d",
+        "question": [
+          "Em qual mês a Selic esteve mais alta?"
+        ]
+      },
+      {
+        "id": "707a41bb298269b099c359f8095742ce",
+        "question": [
+          "Como o dólar variou nos últimos 12 meses?"
+        ]
+      },
+      {
+        "id": "836650b3ef2253f1c8c4df229bd2dc5b",
+        "question": [
+          "Quais foram os 5 dias de maior alta do dólar?"
+        ]
+      },
+      {
+        "id": "e1cca94d1d3204938bd08ddf9209b2a9",
+        "question": [
+          "Qual foi o IPCA acumulado em 12 meses em cada mês de 2026?"
+        ]
+      },
+      {
+        "id": "f7cbde776223588279d055fb6af32651",
+        "question": [
+          "Qual é a cotação mais recente do dólar e do euro?"
+        ]
+      },
+      {
+        "id": "fd2fdb3a66c3abb419f21c3796957d2a",
+        "question": [
+          "Qual foi o juro real no último mês disponível?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "econ_prod.gold.cambio_diario",
+        "column_configs": [
+          {
+            "column_name": "data",
+            "description": [
+              "Dia útil da cotação."
+            ],
+            "synonyms": [
+              "dia",
+              "data da cotação"
+            ]
+          },
+          {
+            "column_name": "dolar",
+            "description": [
+              "Dólar americano, venda, em R$ (PTAX/SGS 1)."
+            ],
+            "synonyms": [
+              "dólar",
+              "USD",
+              "cotação do dólar"
+            ]
+          },
+          {
+            "column_name": "dolar_media_30d",
+            "description": [
+              "Média móvel de 30 dias úteis do dólar."
+            ],
+            "synonyms": [
+              "média móvel"
+            ]
+          },
+          {
+            "column_name": "dolar_variacao_pct",
+            "description": [
+              "Variação % do dólar em relação ao dia útil anterior."
+            ],
+            "synonyms": [
+              "alta do dólar",
+              "variação diária"
+            ]
+          },
+          {
+            "column_name": "euro",
+            "description": [
+              "Euro, venda, em R$ (SGS 21619)."
+            ],
+            "synonyms": [
+              "euro",
+              "EUR"
+            ]
+          },
+          {
+            "column_name": "euro_em_dolares",
+            "description": [
+              "Quantos dólares vale 1 euro (euro/dólar)."
+            ],
+            "synonyms": [
+              "EUR/USD",
+              "paridade"
+            ]
+          },
+          {
+            "column_name": "euro_media_30d",
+            "description": [
+              "Média móvel de 30 dias úteis do euro."
+            ],
+            "synonyms": []
+          },
+          {
+            "column_name": "euro_variacao_pct",
+            "description": [
+              "Variação % do euro em relação ao dia útil anterior."
+            ],
+            "synonyms": [
+              "variação do euro"
+            ]
+          }
+        ]
+      },
+      {
+        "identifier": "econ_prod.gold.indicadores_mensais",
+        "column_configs": [
+          {
+            "column_name": "cdi_acumulado_mes_pct",
+            "description": [
+              "CDI acumulado no mês, %."
+            ],
+            "synonyms": [
+              "CDI",
+              "rendimento do CDI"
+            ]
+          },
+          {
+            "column_name": "dias_uteis",
+            "description": [
+              "Dias úteis com cotação no mês."
+            ],
+            "synonyms": []
+          },
+          {
+            "column_name": "dolar_fechamento",
+            "description": [
+              "Dólar no último dia útil do mês."
+            ],
+            "synonyms": [
+              "fechamento"
+            ]
+          },
+          {
+            "column_name": "dolar_medio",
+            "description": [
+              "Média do dólar no mês."
+            ],
+            "synonyms": [
+              "dólar médio"
+            ]
+          },
+          {
+            "column_name": "euro_medio",
+            "description": [
+              "Média do euro no mês."
+            ],
+            "synonyms": []
+          },
+          {
+            "column_name": "ipca_12m_pct",
+            "description": [
+              "IPCA acumulado em 12 meses, %."
+            ],
+            "synonyms": [
+              "inflação anual",
+              "inflação em 12 meses"
+            ]
+          },
+          {
+            "column_name": "ipca_mes_pct",
+            "description": [
+              "IPCA do mês, %."
+            ],
+            "synonyms": [
+              "inflação do mês",
+              "IPCA mensal"
+            ]
+          },
+          {
+            "column_name": "juro_real_aprox_pct",
+            "description": [
+              "Juro real aproximado: (1+Selic)/(1+IPCA 12m)-1, %."
+            ],
+            "synonyms": [
+              "juro real"
+            ]
+          },
+          {
+            "column_name": "mes",
+            "description": [
+              "Primeiro dia do mês de referência."
+            ],
+            "synonyms": [
+              "mês",
+              "competência"
+            ]
+          },
+          {
+            "column_name": "selic_meta_pct_aa",
+            "description": [
+              "Meta da Selic no fim do mês, % ao ano."
+            ],
+            "synonyms": [
+              "Selic",
+              "taxa básica de juros"
+            ]
+          }
+        ]
+      },
+      {
+        "identifier": "econ_prod.gold.ultimos_valores",
+        "column_configs": [
+          {
+            "column_name": "codigo_sgs",
+            "description": [
+              "Código da série no SGS do Banco Central."
+            ],
+            "synonyms": []
+          },
+          {
+            "column_name": "coletado_em",
+            "description": [
+              "Quando a Lambda coletou o dado."
+            ],
+            "synonyms": []
+          },
+          {
+            "column_name": "data_referencia",
+            "description": [
+              "Data a que o último valor se refere."
+            ],
+            "synonyms": [
+              "data de referência"
+            ]
+          },
+          {
+            "column_name": "descricao",
+            "description": [
+              "Descrição oficial da série."
+            ],
+            "synonyms": []
+          },
+          {
+            "column_name": "serie",
+            "description": [
+              "Nome da série: dolar_venda, euro_venda, selic_meta, cdi_diario, ipca_mensal."
+            ],
+            "synonyms": [
+              "indicador"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "ultimo_valor",
+            "description": [
+              "Valor mais recente publicado."
+            ],
+            "synonyms": [
+              "valor atual"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "e1403d6e7f5e9a4b9090db9056e5b08a",
+        "content": [
+          "Você responde perguntas sobre indicadores econômicos do Brasil, com dados oficiais do Banco Central (API SGS).\n",
+          "Tabelas: cambio_diario (1 linha por dia útil: dólar e euro de venda em R$), indicadores_mensais (1 linha por mês: câmbio médio, Selic meta, CDI acumulado no mês, IPCA do mês, IPCA 12 meses e juro real) e ultimos_valores (último valor de cada série).\n",
+          "Para 'cotação atual' ou 'mais recente', use ultimos_valores ou a maior data de cambio_diario e informe a data de referência.\n",
+          "Taxas em % já estão em pontos percentuais (13.75 = 13,75%). Nunca some taxas de meses diferentes: para acumular use (EXP(SUM(LN(1 + taxa/100))) - 1) * 100.\n",
+          "Juro real = juro_real_aprox_pct (Selic meta descontada do IPCA 12 meses). Só existe quando há 12 meses de IPCA.\n",
+          "O IPCA é mensal e sai com cerca de 10 dias de atraso: o mês atual pode não ter IPCA ainda; diga isso ao usuário.\n",
+          "Sem período informado, use todo o histórico e diga o intervalo de datas. Responda em português do Brasil; valores em R$ com 4 casas e taxas com 2 casas e o símbolo %."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "1f371ad0ec9371603ce4416e6d1917ae",
+        "question": [
+          "Quais foram os 5 dias de maior alta do dólar?"
+        ],
+        "sql": [
+          "SELECT data, dolar, dolar_variacao_pct FROM econ_prod.gold.cambio_diario WHERE dolar_variacao_pct IS NOT NULL ORDER BY dolar_variacao_pct DESC LIMIT 5"
+        ]
+      },
+      {
+        "id": "a78843f0a44b4f32bc76698a57052711",
+        "question": [
+          "Qual foi o juro real no último mês disponível?"
+        ],
+        "sql": [
+          "SELECT mes, selic_meta_pct_aa, ipca_12m_pct, juro_real_aprox_pct FROM econ_prod.gold.indicadores_mensais WHERE juro_real_aprox_pct IS NOT NULL ORDER BY mes DESC LIMIT 1"
+        ]
+      },
+      {
+        "id": "f967ff0c41687a853914d20dc094eea2",
+        "question": [
+          "Quanto rendeu o CDI acumulado em 2025?"
+        ],
+        "sql": [
+          "SELECT ROUND((EXP(SUM(LN(1 + cdi_acumulado_mes_pct / 100))) - 1) * 100, 2) AS cdi_acumulado_2025_pct FROM econ_prod.gold.indicadores_mensais WHERE YEAR(mes) = 2025"
+        ]
+      }
+    ]
+  }
+}
