@@ -270,6 +270,7 @@ O material de estudo que escrevi em cada etapa está em [`docs/aprendizado/`](do
 | # | Tema |
 |---|---|
 | 01 | [Terraform: infraestrutura como código](docs/aprendizado/01-terraform.md) |
+| 02 | [IAM e Unity Catalog: a Databricks acessando a AWS com segurança](docs/aprendizado/02-iam-e-unity-catalog.md) |
 
 ---
 
