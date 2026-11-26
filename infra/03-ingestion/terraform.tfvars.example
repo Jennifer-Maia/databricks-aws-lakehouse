@@ -1,0 +1,4 @@
+# cp terraform.tfvars.example terraform.tfvars   (o .tfvars real não vai para o Git)
+aws_profile = "meu-profile-aws"
+# project            = "econ"                 # igual ao do stack 02-governance
+# schedule_expression = "cron(0 20 * * ? *)"  # 20h de Brasília

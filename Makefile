@@ -3,9 +3,12 @@
 export TMPDIR := $(HOME)/.cache/tmp
 $(shell mkdir -p $(TMPDIR))
 
-STACKS := infra/01-workspaces infra/02-governance
+STACKS := infra/01-workspaces infra/02-governance infra/03-ingestion
 
-.PHONY: help fmt validate plan-workspaces apply-workspaces plan-governance apply-governance destroy-all
+ENV ?= dev
+START ?= 2024-01-01
+
+.PHONY: test plan-ingestion apply-ingestion backfill help fmt validate plan-workspaces apply-workspaces plan-governance apply-governance destroy-all
 
 help:               ## Lista os alvos
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | sed 's/:.*##/ ·/'
@@ -26,6 +29,18 @@ plan-governance:    ## Stack 2: plano da governança
 apply-governance:   ## Stack 2: buckets, role, grupos, catálogos e grants
 	cd infra/02-governance && terraform apply
 
+test:               ## Testes da Lambda de ingestão
+	cd ingestion && uv run --no-project --python 3.12 --with pytest pytest tests -q
+
+plan-ingestion:     ## Stack 3: plano da ingestão
+	cd infra/03-ingestion && terraform init -input=false && terraform plan
+apply-ingestion:    ## Stack 3: Lambdas + agendamento
+	cd infra/03-ingestion && terraform apply
+
+backfill:           ## Carga histórica (ENV=dev|prod START=2024-01-01)
+	aws lambda invoke --function-name econ-ingest-$(ENV) --cli-binary-format raw-in-base64-out --payload '{"start_date":"$(START)"}' /dev/stdout
+
 destroy-all:        ## Apaga TUDO, na ordem inversa (pede confirmação em cada stack)
+	cd infra/03-ingestion && terraform destroy
 	cd infra/02-governance && terraform destroy
 	cd infra/01-workspaces && terraform destroy

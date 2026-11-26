@@ -199,8 +199,8 @@ API pública **SGS (Sistema Gerenciador de Séries Temporais)**, sem autenticaç
 │   ├── 01-workspaces/              #   bucket raiz, IAM roles, credential, storage config, workspaces DEV/PROD
 │   ├── 02-governance/              #   buckets de dados, econ-uc-role, grupos, Unity Catalog, grants
 │   │   └── modules/environment/    #     módulo reutilizado por ambiente (catálogo, schemas, volume, grants)
-│   └── 03-ingestion/               #   Lambda + EventBridge + IAM da ingestão            (🚧)
-├── ingestion/                      # Código Python da Lambda (+ testes)                  (🚧)
+│   └── 03-ingestion/               #   Lambda + EventBridge Scheduler + IAM + CloudWatch
+├── ingestion/                      # Código Python da Lambda + testes (pytest)
 ├── platform/                       # Bundle Databricks: jobs, notebooks, dashboard, Genie (🚧)
 ├── docs/
 │   ├── img/                        #   diagrama de arquitetura (SVG + Excalidraw)
@@ -235,7 +235,17 @@ cd ../02-governance && cp terraform.tfvars.example terraform.tfvars      # preen
 terraform init && terraform plan && terraform apply
 ```
 
-Os próximos passos (ingestão, pipeline e consumo) entram aqui conforme forem concluídos.
+```bash
+# 4. Ingestão: Lambdas + agendamento
+cd ../03-ingestion && cp terraform.tfvars.example terraform.tfvars        # preencha
+terraform init && terraform apply
+
+# 5. Carga histórica (uma vez por ambiente)
+aws lambda invoke --function-name econ-ingest-dev  --cli-binary-format raw-in-base64-out --payload '{"start_date":"2024-01-01"}' /dev/stdout
+aws lambda invoke --function-name econ-ingest-prod --cli-binary-format raw-in-base64-out --payload '{"start_date":"2024-01-01"}' /dev/stdout
+```
+
+Os próximos passos (pipeline e consumo) entram aqui conforme forem concluídos.
 
 ---
 
@@ -255,7 +265,7 @@ Controles: **AWS Budget** com alerta em US$ 5 (contando o gasto antes dos crédi
 
 - [x] Workspaces DEV e PROD na AWS via Terraform
 - [x] Governança: buckets, IAM, grupos, catálogos isolados, schemas por camada e grants
-- [ ] Ingestão: Lambda + EventBridge gravando a API do BCB no S3
+- [x] Ingestão: Lambda + EventBridge gravando a API do BCB no S3 (backfill desde 01/2024)
 - [ ] Pipeline Bronze → Silver → Gold (bundle + testes)
 - [ ] Promoção para PROD com GitHub Actions
 - [ ] Consumo: Dashboard e Genie
@@ -271,6 +281,7 @@ O material de estudo que escrevi em cada etapa está em [`docs/aprendizado/`](do
 |---|---|
 | 01 | [Terraform: infraestrutura como código](docs/aprendizado/01-terraform.md) |
 | 02 | [IAM e Unity Catalog: a Databricks acessando a AWS com segurança](docs/aprendizado/02-iam-e-unity-catalog.md) |
+| 03 | [Ingestão serverless: Lambda + EventBridge + S3](docs/aprendizado/03-ingestao-lambda.md) |
 
 ---
 
