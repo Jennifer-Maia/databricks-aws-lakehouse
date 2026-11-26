@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  terraform:
+    name: Terraform fmt + validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stack: [infra/01-workspaces, infra/02-governance]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+        working-directory: ${{ matrix.stack }}
+      - run: terraform init -backend=false -input=false && terraform validate
+        working-directory: ${{ matrix.stack }}

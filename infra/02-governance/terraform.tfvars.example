@@ -1,0 +1,20 @@
+# cp terraform.tfvars.example terraform.tfvars   (o .tfvars real não vai para o Git)
+
+databricks_account_id = "00000000-0000-0000-0000-000000000000"
+aws_profile           = "meu-profile-aws" # a MESMA conta AWS do stack ../01-workspaces
+project               = "econ"
+
+# Output workspace_ids do stack ../01-workspaces  (terraform output workspace_ids)
+workspace_ids = { dev = 0, prod = 0 }
+
+# workspace_profiles = { dev = "lakehouse-dev", prod = "lakehouse-prod" }
+
+# Você no grupo platform-admins (o e-mail do seu login na Databricks).
+platform_admins = ["voce@gmail.com"]
+
+# Usuários de teste (opcional): e-mail => grupo. Use e-mails reais diferentes
+# (a Databricks trata voce+alias@gmail.com como o mesmo usuário de voce@gmail.com).
+demo_users = {
+  "voce+engenheiro@gmail.com" = "data-engineering"
+  "voce+analista@gmail.com"   = "analysts"
+}

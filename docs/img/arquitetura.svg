@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#343a40"/></marker></defs>
+<rect width="1440" height="900" fill="#ffffff"/>
+<rect x="20" y="140" width="1400" height="300" rx="18" fill="#FFFAF2" stroke="#FF9900" stroke-width="2.5"/>
+<text x="1400" y="170" text-anchor="end" font-size="18" font-weight="700" fill="#FF9900">AWS · conta própria · us-east-2 (Ohio)</text>
+<rect x="20" y="470" width="1400" height="410" rx="18" fill="#FFF8F7" stroke="#FF3621" stroke-width="2.5"/>
+<text x="1400" y="862" text-anchor="end" font-size="18" font-weight="700" fill="#FF3621">Databricks · Account + Unity Catalog (metastore us-east-2)</text>
+<rect x="60" y="520" width="760" height="130" rx="12" fill="none" stroke="#FF3621" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="74" y="544" font-size="14" font-weight="600" fill="#FF3621">Workspace lakehouse-dev · catálogo econ_dev</text>
+<rect x="60" y="690" width="760" height="130" rx="12" fill="none" stroke="#FF3621" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="74" y="714" font-size="14" font-weight="600" fill="#FF3621">Workspace lakehouse-prod · catálogo econ_prod</text>
+<rect x="340" y="30" width="220" height="80" rx="10" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+<text x="450.0" y="66.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">API Banco Central (SGS)</text>
+<text x="450.0" y="87.0" text-anchor="middle" font-size="12.5" fill="#495057">dólar · euro · Selic · IPCA · CDI</text>
+<rect x="60" y="200" width="220" height="80" rx="10" fill="#FFF4E5" stroke="#FF9900" stroke-width="2"/>
+<text x="170.0" y="236.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">EventBridge Scheduler</text>
+<text x="170.0" y="257.0" text-anchor="middle" font-size="12.5" fill="#495057">1x por dia (cron)</text>
+<rect x="340" y="200" width="220" height="80" rx="10" fill="#FFF4E5" stroke="#FF9900" stroke-width="2"/>
+<text x="450.0" y="236.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">AWS Lambda</text>
+<text x="450.0" y="257.0" text-anchor="middle" font-size="12.5" fill="#495057">econ-ingest-&lt;env&gt; · Python</text>
+<rect x="620" y="200" width="240" height="80" rx="10" fill="#FFF4E5" stroke="#FF9900" stroke-width="2"/>
+<text x="740.0" y="236.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">CloudWatch Logs</text>
+<text x="740.0" y="257.0" text-anchor="middle" font-size="12.5" fill="#495057">logs da Lambda (7 dias)</text>
+<rect x="920" y="200" width="220" height="80" rx="10" fill="#FFF4E5" stroke="#FF9900" stroke-width="2"/>
+<text x="1030.0" y="236.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">IAM · cross-account role</text>
+<text x="1030.0" y="257.0" text-anchor="middle" font-size="12.5" fill="#495057">External ID da conta Databricks</text>
+<rect x="1180" y="200" width="220" height="80" rx="10" fill="#FFF4E5" stroke="#FF9900" stroke-width="2"/>
+<text x="1290.0" y="236.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">VPC + NAT · EC2</text>
+<text x="1290.0" y="257.0" text-anchor="middle" font-size="12.5" fill="#495057">compute clássico</text>
+<rect x="60" y="330" width="240" height="80" rx="10" fill="#FFF4E5" stroke="#FF9900" stroke-width="2"/>
+<text x="180.0" y="366.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">S3 · econ-raw</text>
+<text x="180.0" y="387.0" text-anchor="middle" font-size="12.5" fill="#495057">&lt;env&gt;/bcb/&lt;serie&gt;/&lt;data&gt;.json</text>
+<rect x="340" y="330" width="240" height="80" rx="10" fill="#FFF4E5" stroke="#FF9900" stroke-width="2"/>
+<text x="460.0" y="366.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">S3 · econ-lakehouse</text>
+<text x="460.0" y="387.0" text-anchor="middle" font-size="12.5" fill="#495057">tabelas Delta · &lt;env&gt;/</text>
+<rect x="640" y="330" width="240" height="80" rx="10" fill="#FFF4E5" stroke="#FF9900" stroke-width="2"/>
+<text x="760.0" y="366.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">IAM · econ-uc-role</text>
+<text x="760.0" y="387.0" text-anchor="middle" font-size="12.5" fill="#495057">External ID + self-assume</text>
+<rect x="920" y="500" width="480" height="90" rx="10" fill="#E7F0FA" stroke="#1B5E9E" stroke-width="2"/>
+<text x="1160.0" y="541.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">Unity Catalog</text>
+<text x="1160.0" y="562.0" text-anchor="middle" font-size="12.5" fill="#495057">storage credential → external locations → catálogos isolados</text>
+<rect x="80" y="560" width="150" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="155.0" y="591.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">landing</text>
+<text x="155.0" y="612.0" text-anchor="middle" font-size="12.5" fill="#495057">volume bcb</text>
+<rect x="270" y="560" width="150" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="345.0" y="591.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">bronze</text>
+<text x="345.0" y="612.0" text-anchor="middle" font-size="12.5" fill="#495057">Auto Loader</text>
+<rect x="460" y="560" width="150" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="535.0" y="591.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">silver</text>
+<text x="535.0" y="612.0" text-anchor="middle" font-size="12.5" fill="#495057">tipado · dedup</text>
+<rect x="650" y="560" width="150" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="725.0" y="591.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">gold</text>
+<text x="725.0" y="612.0" text-anchor="middle" font-size="12.5" fill="#495057">indicadores</text>
+<rect x="80" y="730" width="150" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="155.0" y="761.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">landing</text>
+<text x="155.0" y="782.0" text-anchor="middle" font-size="12.5" fill="#495057">volume bcb</text>
+<rect x="270" y="730" width="150" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="345.0" y="761.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">bronze</text>
+<text x="345.0" y="782.0" text-anchor="middle" font-size="12.5" fill="#495057">Auto Loader</text>
+<rect x="460" y="730" width="150" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="535.0" y="761.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">silver</text>
+<text x="535.0" y="782.0" text-anchor="middle" font-size="12.5" fill="#495057">tipado · dedup</text>
+<rect x="650" y="730" width="150" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="725.0" y="761.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">gold</text>
+<text x="725.0" y="782.0" text-anchor="middle" font-size="12.5" fill="#495057">indicadores</text>
+<rect x="920" y="730" width="230" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="1035.0" y="761.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">AI/BI Dashboard</text>
+<text x="1035.0" y="782.0" text-anchor="middle" font-size="12.5" fill="#495057">grupo analysts</text>
+<rect x="1170" y="730" width="230" height="70" rx="10" fill="#FFEDEA" stroke="#FF3621" stroke-width="2"/>
+<text x="1285.0" y="761.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">Genie</text>
+<text x="1285.0" y="782.0" text-anchor="middle" font-size="12.5" fill="#495057">perguntas em português</text>
+<rect x="920" y="620" width="480" height="70" rx="10" fill="#F1F3F5" stroke="#495057" stroke-width="2"/>
+<text x="1160.0" y="651.0" text-anchor="middle" font-size="16" font-weight="700" fill="#212529">Declarative Automation Bundle + GitHub Actions</text>
+<text x="1160.0" y="672.0" text-anchor="middle" font-size="12.5" fill="#495057">mesmo código: deploy -t dev → testes → deploy -t prod</text>
+<line x1="450.0" y1="110" x2="450.0" y2="200" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="456.0" y="149.0" font-size="12" font-style="italic" fill="#343a40">HTTPS GET</text>
+<line x1="280" y1="240.0" x2="340" y2="240.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="316.0" y="234.0" font-size="12" font-style="italic" fill="#343a40">dispara</text>
+<line x1="560" y1="240.0" x2="620" y2="240.0" stroke="#343a40" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#a)"/>
+<text x="596.0" y="234.0" font-size="12" font-style="italic" fill="#343a40">logs</text>
+<line x1="450.0" y1="280" x2="180.0" y2="330" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="321.0" y="299.0" font-size="12" font-style="italic" fill="#343a40">PutObject</text>
+<line x1="1140" y1="240.0" x2="1180" y2="240.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="1166.0" y="234.0" font-size="12" font-style="italic" fill="#343a40">cria</text>
+<line x1="640" y1="370.0" x2="580" y2="370.0" stroke="#343a40" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#a)"/>
+<text x="616.0" y="364.0" font-size="12" font-style="italic" fill="#343a40">lê/grava</text>
+<line x1="760.0" y1="410" x2="1160.0" y2="500" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="966.0" y="449.0" font-size="12" font-style="italic" fill="#343a40">AssumeRole</text>
+<line x1="180.0" y1="410" x2="155.0" y2="560" stroke="#343a40" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#a)"/>
+<text x="173.5" y="479.0" font-size="12" font-style="italic" fill="#343a40">volume landing</text>
+<line x1="230" y1="595.0" x2="270" y2="595.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="420" y1="595.0" x2="460" y2="595.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="610" y1="595.0" x2="650" y2="595.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="230" y1="765.0" x2="270" y2="765.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="420" y1="765.0" x2="460" y2="765.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="610" y1="765.0" x2="650" y2="765.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="800" y1="765.0" x2="920" y2="765.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="866.0" y="759.0" font-size="12" font-style="italic" fill="#343a40">SELECT</text>
+<line x1="830" y1="595" x2="830" y2="755" stroke="#495057" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#a)"/>
+<text x="838" y="680" font-size="12" font-style="italic" fill="#495057">promoção</text>
+</svg>
