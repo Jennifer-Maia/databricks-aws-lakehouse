@@ -148,12 +148,13 @@ flowchart TB
 |---|---|---|---|
 | `platform-admins` | ADMIN | ADMIN | Dono dos catálogos, credentials e external locations |
 | `data-engineering` | USER | USER | **DEV:** lê e escreve em tudo · **PROD:** só leitura (quem escreve é o job publicado) |
-| `analysts` | ❌ sem acesso | USER | Só `USE_CATALOG` em `econ_prod` + `USE_SCHEMA`/`SELECT` no schema **`gold`** |
+| `analysts` | ❌ sem acesso | USER | Entitlement só de **SQL** (sem notebooks) · só `USE_CATALOG` em `econ_prod` + `USE_SCHEMA`/`SELECT` no schema **`gold`** |
 
 **Decisões de governança:**
 - **Catálogos isolados (`ISOLATED`):** o `econ_prod` não aparece no workspace DEV, então ninguém escreve em produção por engano a partir de um notebook de desenvolvimento.
 - **Permissões para grupos, nunca para pessoas:** quem entra ou sai do time só muda de grupo, e os grants continuam os mesmos.
 - **Um schema por camada:** o acesso do negócio é dado no schema `gold` inteiro e vale para as tabelas futuras, sem grant tabela por tabela.
+- **Testado com usuário não-admin:** o teste revelou que faltavam *entitlements* (admin ignora essa camada); corrigido no Terraform. Ver [troubleshooting #7](docs/aprendizado/05-troubleshooting.md).
 - **Tudo em Terraform:** grupos, atribuição aos workspaces, catálogos, schemas, volume e grants estão em [`infra/02-governance`](infra/02-governance).
 
 ---

@@ -15,14 +15,14 @@ def text(name, lines, x, y, w, h):
     return {"widget": {"name": name, "multilineTextboxSpec": {"lines": lines}}, "position": {"x": x, "y": y, "width": w, "height": h}}
 
 
-def counter(name, title, field, fmt, x, y):
+def counter(name, title, field, fmt, template, x, y):
     return {
         "widget": {
             "name": name,
             "queries": [{"name": "main_query", "query": {"datasetName": "ds_kpis", "fields": [{"name": field, "expression": f"`{field}`"}], "disaggregated": True}}],
             "spec": {"version": 2, "widgetType": "counter",
-                     "encodings": {"value": {"fieldName": field, "displayName": title, "format": fmt}},
-                     "frame": {"showTitle": True, "title": title, "showDescription": True, "description": "{{ref}}"}},
+                     "encodings": {"value": {"fieldName": field, "displayName": title, "format": fmt, "formatTemplate": template}},
+                     "frame": {"showTitle": True, "title": title, "showDescription": True, "description": "Último valor publicado pelo BCB"}},
         },
         "position": {"x": x, "y": y, "width": 3, "height": 3},
     }
@@ -44,8 +44,8 @@ def line(name, title, ds, x_field, ys, x, y, w, h, kind="line", desc=""):
     }
 
 
-PCT = {"type": "number-plain", "decimalPlaces": {"type": "exact", "places": 2}, "suffix": "%"}
-BRL = {"type": "number-currency", "currencyCode": "BRL", "decimalPlaces": {"type": "exact", "places": 4}}
+PCT = {"type": "number-plain", "decimalPlaces": {"type": "max", "places": 2}}
+BRL = {"type": "number-plain", "decimalPlaces": {"type": "max", "places": 4}}
 
 datasets = [
     {"name": "ds_kpis", "displayName": "Últimos valores", "queryLines": ql("""
@@ -75,10 +75,10 @@ overview = [
                     "Câmbio, juros e inflação coletados diariamente da API SGS do BCB por uma **AWS Lambda**, "
                     "processados na arquitetura **medalhão** (Bronze → Silver → Gold) e governados pelo **Unity Catalog**. "
                     "Fonte: `econ_prod.gold` · atualização diária às 21h."], 0, 0, 12, 2),
-    counter("kpi_dolar", "Dólar (venda)", "dolar", BRL, 0, 2),
-    counter("kpi_euro", "Euro (venda)", "euro", BRL, 3, 2),
-    counter("kpi_selic", "Selic meta (% a.a.)", "selic", PCT, 6, 2),
-    counter("kpi_ipca", "IPCA 12 meses", "ipca_12m", PCT, 9, 2),
+    counter("kpi_dolar", "Dólar (venda)", "dolar", BRL, "R$ {{@formatted}}", 0, 2),
+    counter("kpi_euro", "Euro (venda)", "euro", BRL, "R$ {{@formatted}}", 3, 2),
+    counter("kpi_selic", "Selic meta", "selic", PCT, "{{@formatted}}% a.a.", 6, 2),
+    counter("kpi_ipca", "IPCA 12 meses", "ipca_12m", PCT, "{{@formatted}}%", 9, 2),
     line("graf_dolar", "Dólar: cotação diária e média móvel de 30 dias úteis", "ds_cambio", "data",
          [("dolar", "Dólar (R$)"), ("dolar_media_30d", "Média 30d")], 0, 5, 12, 6),
     line("graf_juros", "Selic vs inflação: o juro real", "ds_mensal", "data",

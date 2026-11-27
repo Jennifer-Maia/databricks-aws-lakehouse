@@ -92,6 +92,26 @@ Além disso, a conta tinha **cota de 5 vCPUs** para EC2 (`aws service-quotas get
 | **Solução** | Confirmar que o pipeline não tinha tabelas (`databricks tables list econ_dev bronze`), pedir aprovação e usar `--auto-approve`. |
 | **Lição** | Nunca usar `--auto-approve` às cegas: leia o plano de exclusão antes. |
 
+## 7. ⭐ Analista não conseguia nem entrar no workspace
+
+| | |
+|---|---|
+| **Sintoma** | Na guia anônima, com o usuário analista: *"Unable to view page. You do not have permission to access this page in workspace … ensure you are assigned to the workspace and have either the 'Workspace access', 'Databricks SQL access', or 'Consumer access' entitlement"*. |
+| **Por que não apareceu antes** | Eu (admin) sempre conseguia entrar: **admin ignora entitlements**. Só um teste com um usuário comum revelou o problema. |
+| **Diagnóstico** | `databricks groups get <id> -p lakehouse-prod` → `entitlements: None` em **todos** os grupos, inclusive `users`. |
+| **Causa** | São duas camadas diferentes. **Atribuir o grupo ao workspace** (`databricks_mws_permission_assignment`, no nível da conta) diz *em qual workspace a pessoa pode entrar*. **Entitlements** (`databricks_entitlements`, no nível do workspace) dizem *o que ela pode usar lá dentro*. Neste workspace novo, nenhum grupo tinha entitlement. |
+| **Solução** | Terraform em [`infra/02-governance/identity.tf`](../../infra/02-governance/identity.tf): `data-engineering` com `workspace_access` + `databricks_sql_access` (DEV e PROD) e `analysts` só com `databricks_sql_access` (PROD). |
+| **Lição** | **Teste a governança com um usuário que não é admin.** Permissões no Unity Catalog (dados) e entitlements no workspace (interface) são camadas independentes, e as duas precisam estar certas. |
+
+### As 4 camadas de acesso (resumo para entrevista)
+
+| Camada | Pergunta | Onde configuramos |
+|---|---|---|
+| 1. Identidade (conta) | A pessoa existe e está em qual grupo? | `databricks_user`, `databricks_group_member` |
+| 2. Atribuição ao workspace | Em qual workspace o grupo pode entrar? | `databricks_mws_permission_assignment` |
+| 3. Entitlements | O que o grupo usa no workspace (notebooks? só SQL?) | `databricks_entitlements` |
+| 4. Unity Catalog | Quais dados o grupo pode ler ou escrever? | `databricks_grant` (catálogo, schema `gold`) |
+
 ## Comandos de diagnóstico que valem guardar
 
 ```bash
@@ -99,6 +119,7 @@ aws sts get-caller-identity --profile <p>                        # quem sou eu n
 aws freetier get-account-plan-state --region us-east-1           # plano da conta e créditos
 databricks auth profiles                                         # perfis e se o login é válido
 databricks current-user me -p <perfil>                           # quem sou eu no workspace?
+databricks groups get <group-id> -p <perfil>                     # entitlements de um grupo
 databricks clusters events <cluster-id> -p <perfil>              # por que o cluster não subiu?
 databricks experimental aitools tools query "<SQL>" -p <perfil>  # rodar SQL do terminal
 terraform plan                                                   # o que vai mudar? (sempre antes do apply)

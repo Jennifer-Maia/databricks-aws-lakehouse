@@ -87,20 +87,20 @@
                   "fieldName": "dolar",
                   "displayName": "Dólar (venda)",
                   "format": {
-                    "type": "number-currency",
-                    "currencyCode": "BRL",
+                    "type": "number-plain",
                     "decimalPlaces": {
-                      "type": "exact",
+                      "type": "max",
                       "places": 4
                     }
-                  }
+                  },
+                  "formatTemplate": "R$ {{@formatted}}"
                 }
               },
               "frame": {
                 "showTitle": true,
                 "title": "Dólar (venda)",
                 "showDescription": true,
-                "description": "{{ref}}"
+                "description": "Último valor publicado pelo BCB"
               }
             }
           },
@@ -137,20 +137,20 @@
                   "fieldName": "euro",
                   "displayName": "Euro (venda)",
                   "format": {
-                    "type": "number-currency",
-                    "currencyCode": "BRL",
+                    "type": "number-plain",
                     "decimalPlaces": {
-                      "type": "exact",
+                      "type": "max",
                       "places": 4
                     }
-                  }
+                  },
+                  "formatTemplate": "R$ {{@formatted}}"
                 }
               },
               "frame": {
                 "showTitle": true,
                 "title": "Euro (venda)",
                 "showDescription": true,
-                "description": "{{ref}}"
+                "description": "Último valor publicado pelo BCB"
               }
             }
           },
@@ -185,22 +185,22 @@
               "encodings": {
                 "value": {
                   "fieldName": "selic",
-                  "displayName": "Selic meta (% a.a.)",
+                  "displayName": "Selic meta",
                   "format": {
                     "type": "number-plain",
                     "decimalPlaces": {
-                      "type": "exact",
+                      "type": "max",
                       "places": 2
-                    },
-                    "suffix": "%"
-                  }
+                    }
+                  },
+                  "formatTemplate": "{{@formatted}}% a.a."
                 }
               },
               "frame": {
                 "showTitle": true,
-                "title": "Selic meta (% a.a.)",
+                "title": "Selic meta",
                 "showDescription": true,
-                "description": "{{ref}}"
+                "description": "Último valor publicado pelo BCB"
               }
             }
           },
@@ -239,18 +239,18 @@
                   "format": {
                     "type": "number-plain",
                     "decimalPlaces": {
-                      "type": "exact",
+                      "type": "max",
                       "places": 2
-                    },
-                    "suffix": "%"
-                  }
+                    }
+                  },
+                  "formatTemplate": "{{@formatted}}%"
                 }
               },
               "frame": {
                 "showTitle": true,
                 "title": "IPCA 12 meses",
                 "showDescription": true,
-                "description": "{{ref}}"
+                "description": "Último valor publicado pelo BCB"
               }
             }
           },
