@@ -276,6 +276,8 @@ databricks bundle deploy -t prod && databricks bundle run econ_daily -t prod
 
 Controles: **AWS Budget** com alerta em US$ 5 (contando o gasto antes dos créditos) e destruição de tudo com `terraform destroy` ao final (ingestão → governança → workspaces).
 
+> **Ambiente destruído em 26/11/2026.** O código continua aqui: para recriar tudo, siga [Como reproduzir](#-como-reproduzir).
+
 ---
 
 ## ✅ Status do projeto
@@ -286,7 +288,7 @@ Controles: **AWS Budget** com alerta em US$ 5 (contando o gasto antes dos crédi
 - [x] Pipeline Bronze → Silver → Gold (job serverless + Auto Loader + quarentena + testes PySpark)
 - [x] Promoção DEV → PROD com bundles (mesmo código, agenda ativa só em PROD) + CI no GitHub Actions
 - [x] Consumo: AI/BI Dashboard e Genie em PROD, com `embed_credentials: false` (governança até o consumo)
-- [ ] Evidências e limpeza do ambiente
+- [x] Evidências e limpeza do ambiente: tudo destruído com Terraform, e conferido na AWS que nada ficou cobrando (ver [troubleshooting #8](docs/aprendizado/05-troubleshooting.md))
 
 ---
 

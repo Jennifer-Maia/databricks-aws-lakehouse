@@ -41,6 +41,7 @@ locals {
 
 # A Databricks testa leitura/escrita nas duas URLs ao criar.
 resource "databricks_external_location" "raw" {
+  force_destroy   = true
   name            = "${var.project}-raw-${var.env}"
   url             = "${local.raw_prefix}/"
   credential_name = var.storage_credential
@@ -49,6 +50,7 @@ resource "databricks_external_location" "raw" {
 }
 
 resource "databricks_external_location" "lakehouse" {
+  force_destroy   = true
   name            = "${var.project}-lakehouse-${var.env}"
   url             = "${local.lakehouse_prefix}/"
   credential_name = var.storage_credential
@@ -64,6 +66,8 @@ resource "databricks_catalog" "this" {
   storage_root   = "${local.lakehouse_prefix}/"
   isolation_mode = "ISOLATED"
   owner          = var.owner_group
+  # Didático: deixa o destroy apagar o catálogo com tabelas dentro. Em produção, false.
+  force_destroy = true
 
   depends_on = [databricks_external_location.lakehouse]
 }

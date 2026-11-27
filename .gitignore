@@ -31,3 +31,6 @@ __pycache__/
 .env.*
 .claude/settings.local.json
 .DS_Store
+
+# Rascunho pessoal do post (não publicar no repositório)
+docs/linkedin-post.md

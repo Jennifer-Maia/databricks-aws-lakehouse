@@ -72,6 +72,67 @@ databricks fs ls dbfs:/Volumes/econ_dev/landing/bcb -p lakehouse-dev
 | `cdi_diario` | 12 | 729 |
 | `ipca_mensal` | 433 | 34 |
 
+## Lambda a fundo (o que cai em entrevista)
+
+### Como a Lambda funciona por dentro
+
+```text
+evento ──► AWS cria (ou reaproveita) um "ambiente de execução" ──► roda lambda_handler(event, context) ──► resposta
+           └── 1ª vez: cold start (baixa o .zip, sobe o Python, roda os imports)
+           └── próximas: warm start (reaproveita; variáveis globais continuam em memória)
+```
+
+| Conceito | O que significa | Neste projeto |
+|---|---|---|
+| **Cold start** | Atraso da 1ª execução (sobe o ambiente). Em Python costuma ser algumas centenas de ms | Irrelevante: roda 1x por dia, ninguém espera a resposta |
+| **Memória** | De 128 MB a 10 GB. A **CPU cresce junto** com a memória | 256 MB configurados |
+| **Timeout** | Máximo de **15 minutos** por execução | 120 s (a carga histórica levou ~7 s) |
+| **Concorrência** | Quantas execuções simultâneas; cada evento pode virar um ambiente novo | 1 (o agendamento roda uma vez) |
+| **Invocação síncrona** | Quem chama espera a resposta (ex.: `aws lambda invoke`, API Gateway) | Nossos testes e o backfill |
+| **Invocação assíncrona** | A AWS enfileira o evento e responde na hora; em caso de erro, tenta de novo | O EventBridge Scheduler |
+| **Execution role** | A identidade da função na AWS (nunca use access key no código) | `econ-ingest-<env>` |
+| **Variáveis de ambiente** | Configuração fora do código | `RAW_BUCKET`, `ENV`, `LOOKBACK_DAYS` |
+| **Layers / container** | Jeitos de levar dependências grandes (pandas, etc.) | Não precisou: só biblioteca padrão + boto3 |
+| **`/tmp`** | Disco temporário da função (512 MB a 10 GB) | Não usado: o JSON vai direto da memória para o S3 |
+
+### Como se paga uma Lambda
+
+**Requisições + tempo × memória (GB-segundo).** Existe uma cota gratuita mensal permanente (1 milhão de requisições e 400 mil GB-s). Conta do nosso caso, com os números reais do print do monitor:
+
+| Métrica (print `lamba-monitor.png`) | Valor |
+|---|---|
+| Duração da carga histórica | 7.267 ms (faturado: 7.405 ms) |
+| Memória configurada / **usada** | 256 MB / **96 MB** |
+| Erros | 0 |
+
+`0,25 GB × 7,4 s ≈ 1,85 GB-s` por execução. Mesmo rodando todo dia, isso dá ~56 GB-s por mês, **0,014%** da cota gratuita.
+
+**Melhoria possível (boa para comentar em entrevista):** a função usou só 96 MB dos 256 MB. Daria para baixar para 128 MB, mas a CPU também cairia e a execução ficaria mais lenta. O jeito certo de decidir é medir; existe a ferramenta *AWS Lambda Power Tuning* para isso.
+
+### Quando NÃO usar Lambda
+
+| Situação | Melhor opção |
+|---|---|
+| Processamento que passa de 15 min | AWS Glue, ECS/Fargate, job no Databricks |
+| Transformar GB/TB de dados | Spark (Databricks, Glue, EMR) |
+| Orquestrar vários passos com espera e retentativas | AWS Step Functions ou Lakeflow Jobs |
+| Dependências pesadas (ML, drivers nativos) | Lambda com imagem de container ou Fargate |
+| Servidor que fica ligado o tempo todo (WebSocket, conexões longas) | ECS/Fargate, EC2 |
+
+### Mais perguntas de entrevista sobre Lambda
+
+**"O que é cold start e como reduzir?"**
+> É o tempo para a AWS criar o ambiente na primeira execução. Dá para reduzir com pacote pequeno, imports leves, mais memória (mais CPU), *provisioned concurrency* para APIs sensíveis a latência, ou *SnapStart*. No meu caso não importa, porque é uma carga batch diária.
+
+**"Sua Lambda pode rodar duas vezes para o mesmo evento?"**
+> Pode: invocações assíncronas têm entrega *at-least-once* e retentativas. Por isso desenhei para ser **idempotente**: cada execução grava um arquivo novo, e a Silver deduplica por (série, data). Rodar duas vezes não muda o resultado final.
+
+**"Como você empacota e publica a Lambda?"**
+> Com Terraform: o provider `archive` gera o .zip a partir da pasta `ingestion/src`, e o `source_code_hash` faz a função ser republicada só quando o código muda. Os testes rodam antes, no CI.
+
+**"Como você monitora?"**
+> O CloudWatch traz métricas prontas (invocações, duração, erros, throttles) e os logs. Eu logo um JSON por série com o número de registros e o arquivo gravado, o que facilita consultar no *Logs Insights*. O próximo passo seria um alarme de `Errors > 0` mandando e-mail via SNS.
+
 ## Perguntas de entrevista (e como responder)
 
 **"Por que Lambda e não um job no Databricks para buscar a API?"**

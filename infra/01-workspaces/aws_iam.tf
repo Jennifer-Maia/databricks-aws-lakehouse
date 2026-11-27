@@ -281,8 +281,13 @@ resource "aws_iam_role_policy" "cross_account" {
 
 # Sem esta pausa, a validação da credential na Databricks costuma falhar
 # ("Failed credential validation checks") porque o IAM ainda não propagou.
+#
+# destroy_duration: no `terraform destroy`, o workspace é apagado primeiro, mas a
+# Databricks remove a VPC/NAT/IPs DEPOIS, de forma assíncrona, usando esta role.
+# Sem a espera, a role sumia antes e a rede ficava órfã na conta (cobrando ~US$ 1,20/dia).
 resource "time_sleep" "cross_account_role" {
-  create_duration = "20s"
+  create_duration  = "20s"
+  destroy_duration = "15m"
 
   triggers = {
     role_arn   = aws_iam_role.cross_account.arn

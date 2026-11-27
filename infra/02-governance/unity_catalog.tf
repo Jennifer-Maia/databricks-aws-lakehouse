@@ -25,6 +25,7 @@ resource "databricks_storage_credential" "this" {
 
   # A role ainda não existe neste momento; a validação acontece nas external locations.
   skip_validation = true
+  force_destroy   = true # didático: permite o destroy mesmo com external locations
 }
 
 # Um bloco por ambiente. Cada um usa o provider do SEU workspace.

@@ -112,6 +112,25 @@ Além disso, a conta tinha **cota de 5 vCPUs** para EC2 (`aws service-quotas get
 | 3. Entitlements | O que o grupo usa no workspace (notebooks? só SQL?) | `databricks_entitlements` |
 | 4. Unity Catalog | Quais dados o grupo pode ler ou escrever? | `databricks_grant` (catálogo, schema `gold`) |
 
+## 8. ⭐ Destruir também é engenharia: a limpeza deixou rede órfã
+
+Ao final, apagamos tudo com `bundle destroy` e `terraform destroy` (ingestão → governança → workspaces). Três lições:
+
+| # | O que aconteceu | Causa | Solução |
+|---|---|---|---|
+| a | `cannot delete schema: Catalog 'econ_dev' is not accessible in current workspace` | O destroy apagou primeiro o **workspace binding**. Sem ele, um catálogo `ISOLATED` fica invisível, até para quem vai apagá-lo. | Religar o catálogo (`databricks workspace-bindings update-bindings`), apagar com `databricks catalogs delete --force` e tirar do state (`terraform state rm`). |
+| b | `Cannot delete external location ... 12 dependent managed tables` | Tabelas gerenciadas apagadas ficam **7 dias** recuperáveis (`UNDROP TABLE`) e continuam contando como dependentes. | `databricks external-locations delete --force`, já que o bucket seria apagado de qualquer jeito. |
+| c | Depois de tudo "destruído", **sobraram 2 NAT Gateways, 2 IPs públicos e 2 VPCs**, cobrando ~US$ 2,40/dia | A Databricks apaga a rede do workspace **de forma assíncrona**, usando a cross-account role. O Terraform apagou a role logo depois do workspace, e a limpeza ficou sem permissão. | Remoção manual (NAT → IPs → endpoints → IGW → subnets → route tables → security groups → VPC), só nas VPCs com tag `databricks-WorkerEnvId(workerenv-<id do workspace>)`. Correção permanente: `destroy_duration = "15m"` no `time_sleep` da role ([`infra/01-workspaces/aws_iam.tf`](../../infra/01-workspaces/aws_iam.tf)). |
+
+**Lição:** depois de um destroy, **confira na AWS** se não sobrou nada cobrando:
+
+```bash
+aws ec2 describe-nat-gateways --filter Name=state,Values=available   # NAT (o mais caro)
+aws ec2 describe-addresses                                           # IPs públicos
+aws ec2 describe-vpcs --filters Name=is-default,Values=false         # VPCs que sobraram
+aws ec2 describe-instances --filters Name=instance-state-name,Values=running
+```
+
 ## Comandos de diagnóstico que valem guardar
 
 ```bash
